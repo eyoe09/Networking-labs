@@ -1,0 +1,61 @@
+! ============================
+! SW1 CONFIG
+! ============================
+
+! ============================================================
+! SW1 - Access Port Security Configuration
+! Purpose: Secure end-device access ports FastEthernet0/1-0/3
+! ============================================================
+
+interface range FastEthernet0/1 - 3
+ ! These ports connect to end devices, so force them into static access mode.
+ ! Port security cannot be enabled while the ports remain dynamically negotiated.
+ switchport mode access
+
+ ! Enable Layer 2 port security on the access ports.
+ switchport port-security
+
+ ! Allow only one secure MAC address per port.
+ switchport port-security maximum 1
+
+ ! Shut the port down if an unauthorized MAC address causes a violation.
+ switchport port-security violation shutdown
+
+ ! Do not use sticky MAC learning on these ports.
+ no switchport port-security mac-address sticky
+
+ ! Age dynamically learned secure MAC addresses after 60 minutes.
+ switchport port-security aging time 60
+exit
+
+! End of SW1 configuration
+
+! ============================
+! SW2 CONFIG
+! ============================
+
+! ============================================================
+! SW2 - Trunk Port Security Configuration
+! Purpose: Secure GigabitEthernet0/1 while keeping it as a trunk
+! ============================================================
+
+interface GigabitEthernet0/1
+ ! This link is intended to carry multiple VLANs, so force it into static trunk mode.
+ ! Port security was rejected while the interface was still a dynamic port.
+ switchport mode trunk
+
+ ! Enable Layer 2 port security on the now-static trunk port.
+ switchport port-security
+
+ ! Permit up to four secure MAC addresses on this trunk.
+ switchport port-security maximum 4
+
+ ! Learn secure MAC addresses dynamically and save them as sticky entries.
+ switchport port-security mac-address sticky
+
+ ! Keep the interface up during a violation, but drop offending traffic
+ ! and record/increment the security violation counter.
+ switchport port-security violation restrict
+exit
+
+! End of SW2 configuration
